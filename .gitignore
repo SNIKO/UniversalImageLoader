@@ -1,0 +1,6 @@
+/_ReSharper.AirPlay/
+bin/
+obj/
+*.suo
+*.user
+sources\Desktop\TestApp*/

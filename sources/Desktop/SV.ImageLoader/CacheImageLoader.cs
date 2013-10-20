@@ -17,9 +17,102 @@ namespace SV.ImageLoader
 
         private readonly List<CacheImageLoader.CacheItem> index = new List<CacheItem>();
 
+        private Func<CacheImageLoader.CacheItem, long> itemWeightEvaluator;
+
+        private CacheSize cacheSize;
+
+        private long currentCacheWeight;
+
+        private ICacheCleanupStrategy cacheCleanupStrategy;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="CacheImageLoader"/> class.
+        /// </summary>
+        protected CacheImageLoader()
+        {
+            this.WithCacheSize(50.Megabytes());
+            this.WithCacheCleanupStrategy(CacheCleanupStrategy.RarelyUsedItemsRemoveFirst);
+        }
+
         #endregion
 
         #region Methods
+
+        /// <summary>
+        ///     Specify the size of the cache.
+        /// </summary>
+        /// <param name="size">
+        ///     The size of the cache. If the size is exceeded, the less significant items would be removed using the <see cref="ICacheCleanupStrategy"/> specified via <see cref="WithCacheCleanupStrategy"/>.
+        /// </param>
+        /// <returns>
+        ///     Returns instance of current <see cref="BaseImageLoader"/>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        ///     <paramref name="size"/> is <c>null</c>.
+        /// </exception>
+        public CacheImageLoader WithCacheSize(CacheSize size)
+        {
+            if (size == null)
+            {
+                throw new ArgumentNullException("size");
+            }
+
+            lock (this.index)
+            {
+                var weightRecalculationRequired = this.cacheSize != null && this.cacheSize.Units != size.Units;
+                this.cacheSize = size;
+
+                switch (size.Units)
+                {
+                    case CacheSize.SizeUnits.Bytes:
+                        this.itemWeightEvaluator = item => item.Size;
+                        break;
+
+                    case CacheSize.SizeUnits.Items:
+                        this.itemWeightEvaluator = item => 1;
+                        break;
+
+                    default:
+                        this.itemWeightEvaluator = item => item.Size;
+                        break;
+                }
+
+                if (weightRecalculationRequired)
+                {
+                    this.currentCacheWeight = this.index.Sum(this.itemWeightEvaluator);
+                }
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        ///     Specifies an instance of <see cref="ICacheCleanupStrategy"/> to use for detecting less significatn items in cache that can be removed when size exceeds the value specified in <see cref="WithCacheSize"/>.
+        /// </summary>
+        /// <param name="cacheCleanupStrategy">
+        ///     An instance of <see cref="ICacheCleanupStrategy"/> to use.
+        /// </param>
+        /// <returns>
+        ///     Returns instance of current <see cref="BaseImageLoader"/>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        ///     <paramref name="cacheCleanupStrategy"/> is <c>null</c>.
+        /// </exception>
+        public CacheImageLoader WithCacheCleanupStrategy(ICacheCleanupStrategy cacheCleanupStrategy)
+        {
+            if (cacheCleanupStrategy == null)
+            {
+                throw new ArgumentNullException("cacheCleanupStrategy");
+            }
+
+            this.cacheCleanupStrategy = cacheCleanupStrategy;
+
+            return this;
+        }
 
         /// <summary>
         ///     Requests loading the image of <paramref name="size"/> located on <paramref name="uri"/>. 
@@ -137,6 +230,11 @@ namespace SV.ImageLoader
             {
                 var uniqueItems = cacheItems.Where(item => this.index.All(i => i.Key != item.Key || i.ImageSize != item.ImageSize)).ToList();
 
+                if (this.cacheSize != null)
+                {
+                    this.currentCacheWeight += uniqueItems.Sum(itemWeightEvaluator);
+                }
+
                 this.index.AddRange(uniqueItems);
             }
         }
@@ -149,6 +247,7 @@ namespace SV.ImageLoader
             lock (this.index)
             {
                 this.index.Clear();
+                this.currentCacheWeight = 0;
             }
         }
 
@@ -260,6 +359,11 @@ namespace SV.ImageLoader
             lock (this.index)
             {
                 this.index.Remove(item);
+
+                if (itemWeightEvaluator != null)
+                {
+                    this.currentCacheWeight -= itemWeightEvaluator(item);
+                }
             }
 
             this.DeleteCacheData(item);
@@ -272,15 +376,42 @@ namespace SV.ImageLoader
             cacheItem.LastAccessTime = DateTime.UtcNow;
             cacheItem.ImageSize = image.Size;
 
+            this.CleanupCache(itemWeightEvaluator(cacheItem));
             this.AddToIndex(new[] { cacheItem });
             this.SetCacheDataAsync(cacheItem, image.Data);
+        }
+
+        private void CleanupCache(long minFreeSpaceRequired)
+        {
+            IEnumerable<CacheItem> itemsToDelete = null;
+
+            lock (this.index)
+            {
+                if (this.cacheSize != null)
+                {
+                    var weightToFree = this.currentCacheWeight + minFreeSpaceRequired - this.cacheSize.Size;
+
+                    if (this.cacheCleanupStrategy != null && weightToFree > 0)
+                    {
+                        itemsToDelete = this.cacheCleanupStrategy.GetItemsToCleanup(this.index, itemWeightEvaluator, weightToFree);                        
+                    }
+                }
+            }
+
+            if (itemsToDelete != null)
+            {
+                foreach (var item in itemsToDelete)
+                {
+                    this.RemoveFromCache(item);
+                }
+            }
         }
 
         #endregion
 
         #region Types
 
-        protected class CacheItem
+        public class CacheItem
         {
             /// <summary>
             ///     Gets or sets the unique key of the item in cache.

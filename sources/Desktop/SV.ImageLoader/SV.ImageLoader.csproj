@@ -48,14 +48,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseImageLoader.cs" />
+    <Compile Include="CacheCleanupStrategy.cs" />
     <Compile Include="CacheImageLoader.cs" />
+    <Compile Include="CacheSize.cs" />
     <Compile Include="Extensions\ByteArrayExtension.cs" />
+    <Compile Include="Extensions\IntExtensions.cs" />
     <Compile Include="Extensions\StreamExtension.cs" />
     <Compile Include="FileSystemImageLoader.cs" />
+    <Compile Include="ICacheCleanupStrategy.cs" />
     <Compile Include="ImageLoaderException.cs" />
     <Compile Include="ImageInfo.cs" />
     <Compile Include="MemoryImageLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RarelyUsedItemsRemoveFirstCleanupStrategy.cs" />
     <Compile Include="Size.cs" />
     <Compile Include="WebImageLoader.cs" />
   </ItemGroup>

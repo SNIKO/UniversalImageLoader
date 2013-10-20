@@ -86,11 +86,23 @@
     <Compile Include="..\..\Desktop\SV.ImageLoader\BaseImageLoader.cs">
       <Link>BaseImageLoader.cs</Link>
     </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\CacheCleanupStrategy.cs">
+      <Link>CacheCleanupStrategy.cs</Link>
+    </Compile>
     <Compile Include="..\..\Desktop\SV.ImageLoader\CacheImageLoader.cs">
       <Link>CacheImageLoader.cs</Link>
     </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\CacheSize.cs">
+      <Link>CacheSize.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\Extensions\IntExtensions.cs">
+      <Link>Extensions\IntExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\..\Desktop\SV.ImageLoader\Extensions\StreamExtension.cs">
       <Link>Extensions\StreamExtension.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\ICacheCleanupStrategy.cs">
+      <Link>ICacheCleanupStrategy.cs</Link>
     </Compile>
     <Compile Include="..\..\Desktop\SV.ImageLoader\ImageInfo.cs">
       <Link>ImageInfo.cs</Link>
@@ -100,6 +112,9 @@
     </Compile>
     <Compile Include="..\..\Desktop\SV.ImageLoader\MemoryImageLoader.cs">
       <Link>MemoryImageLoader.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\RarelyUsedItemsRemoveFirstCleanupStrategy.cs">
+      <Link>RarelyUsedItemsRemoveFirstCleanupStrategy.cs</Link>
     </Compile>
     <Compile Include="..\..\Desktop\SV.ImageLoader\Size.cs">
       <Link>Size.cs</Link>

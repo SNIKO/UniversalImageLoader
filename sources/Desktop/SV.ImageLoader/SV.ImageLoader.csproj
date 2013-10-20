@@ -50,6 +50,7 @@
     <Compile Include="BaseImageLoader.cs" />
     <Compile Include="CacheImageLoader.cs" />
     <Compile Include="Extensions\ByteArrayExtension.cs" />
+    <Compile Include="Extensions\StreamExtension.cs" />
     <Compile Include="FileSystemImageLoader.cs" />
     <Compile Include="ImageLoaderException.cs" />
     <Compile Include="ImageInfo.cs" />

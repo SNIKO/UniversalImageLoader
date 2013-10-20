@@ -96,18 +96,16 @@ namespace SV.ImageLoader
 
             private async void ProceedReqeustAsync(ImageLoadContext request)
             {
-                var client = new WebClient();
-
                 try
                 {
-                    Size resizedImageSize;
-                    var imageData = await client.DownloadDataTaskAsync(request.Uri);
-                    var resizedImageData = imageData.Resize(request.Size, true, out resizedImageSize);
+                    var imageResponse = await WebRequest.Create(request.Uri).GetResponseAsync();
+                    var imageData = await imageResponse.GetResponseStream().ToArrayAsync();
+                    var resizedImageInfo = await imageData.ResizeAsync(request.Size, true);
 
                     var result = new ImageInfo
                         {
-                            Data = resizedImageData,
-                            Size = resizedImageSize,
+                            Data = resizedImageInfo.Data,
+                            Size = resizedImageInfo.Size,
                             Uri = request.Uri,
                             IsFinal = true
                         };
@@ -121,12 +119,6 @@ namespace SV.ImageLoader
                 }
                 finally
                 {
-                    var disposableClient = client as IDisposable;
-                    if (disposableClient != null)
-                    {
-                        disposableClient.Dispose();                        
-                    }
-
                     lock (this.pendingRequests)
                     {
                         if (this.pendingRequests.Any())

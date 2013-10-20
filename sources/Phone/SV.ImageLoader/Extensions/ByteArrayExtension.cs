@@ -2,6 +2,7 @@
 namespace SV.ImageLoader.Extensions
 {
     using System.IO;
+    using System.Threading.Tasks;
     using System.Windows.Media.Imaging;
 
     /// <summary>
@@ -21,37 +22,37 @@ namespace SV.ImageLoader.Extensions
         /// <param name="keepAspectRatio">
         ///     A flag indicating whether to save original aspect ratio.
         /// </param>
-        /// <param name="resultSize">
-        ///     The size of resized image. It equals to <paramref name="newSize"/> if <paramref name="keepAspectRatio"/> is <c>false</c>; otherwise, the height or width
-        ///     will be different to keep original aspect ratio.
-        /// </param>
         /// <returns>
-        ///     The binary data of the resized image.
+        ///     The structure which contains binary data of resized image and the actial size of resized image depending on <paramref name="keepAspectRatio"/> value.
         /// </returns>
-        public static byte[] Resize(this byte[] imageData, Size newSize, bool keepAspectRatio, out Size resultSize)
+        public static Task<ImageInfo> ResizeAsync(this byte[] imageData, Size newSize, bool keepAspectRatio)
         {
+            var result = new ImageInfo();
+
             var image = imageData.ToBitmap();
             var percentWidth = (double)newSize.Width / (double)image.PixelWidth;
             var percentHeight = (double)newSize.Height / (double)image.PixelHeight;
 
             if (keepAspectRatio)
             {
-                resultSize = percentWidth < percentHeight
+                result.Size = percentWidth < percentHeight
                                     ? new Size(newSize.Width, (int)(image.PixelHeight * percentWidth))
                                     : new Size((int)(image.PixelWidth * percentHeight), newSize.Height);
             }
             else
             {
-                resultSize = newSize;
+                result.Size = newSize;
             }
 
             var wb = new WriteableBitmap(image);
             using (var memoryStream = new MemoryStream())
             {
-                wb.SaveJpeg(memoryStream, resultSize.Width, resultSize.Height, 0, 100);
+                wb.SaveJpeg(memoryStream, result.Size.Width, result.Size.Height, 0, 100);
 
-                return memoryStream.ToArray();
+                result.Data = memoryStream.ToArray();
             }
+
+            return Task.FromResult(result);
         }
 
         /// <summary>

@@ -1,9 +1,9 @@
 ﻿
-using System.Windows.Media;
-
 namespace SV.ImageLoader.Extensions
 {
     using System.IO;
+    using System.Threading.Tasks;
+    using System.Windows.Media;
     using System.Windows.Media.Imaging;
 
     /// <summary>
@@ -23,15 +23,13 @@ namespace SV.ImageLoader.Extensions
         /// <param name="keepAspectRatio">
         ///     A flag indicating whether to save original aspect ratio.
         /// </param>
-        /// <param name="resultSize">
-        ///     The size of resized image. It equals to <paramref name="newSize"/> if <paramref name="keepAspectRatio"/> is <c>false</c>; otherwise, the height or width
-        ///     will be different to keep original aspect ratio.
-        /// </param>
         /// <returns>
-        ///     The binary data of the resized image.
+        ///     The structure which contains binary data of resized image and the actial size of resized image depending on <paramref name="keepAspectRatio"/> value.
         /// </returns>
-        public static byte[] Resize(this byte[] imageData, Size newSize, bool keepAspectRatio, out Size resultSize)
+        public static Task<ImageInfo> ResizeAsync(this byte[] imageData, Size newSize, bool keepAspectRatio)
         {
+            var result = new ImageInfo();
+
             var image = imageData.ToBitmap();
             var percentWidth = (double)newSize.Width / (double)image.PixelWidth;
             var percentHeight = (double)newSize.Height / (double)image.PixelHeight;
@@ -49,7 +47,6 @@ namespace SV.ImageLoader.Extensions
             }
 
             var resizedImage = new TransformedBitmap(image, transform);
-            resultSize = new Size(resizedImage.PixelWidth, resizedImage.PixelHeight);
             
             using (var memoryStream = new MemoryStream())
             {
@@ -57,8 +54,11 @@ namespace SV.ImageLoader.Extensions
                 jpegEncoder.Frames.Add(BitmapFrame.Create(resizedImage));
                 jpegEncoder.Save(memoryStream);
 
-                return memoryStream.ToArray();
+                result.Data = memoryStream.ToArray();
+                result.Size = new Size(resizedImage.PixelWidth, resizedImage.PixelHeight);
             }
+
+            return Task.FromResult(result);
         }
 
         /// <summary>

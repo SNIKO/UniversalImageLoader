@@ -102,7 +102,37 @@
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\BaseImageLoader.cs">
+      <Link>BaseImageLoader.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\CacheImageLoader.cs">
+      <Link>CacheImageLoader.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\Extensions\StreamExtension.cs">
+      <Link>Extensions\StreamExtension.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\ImageInfo.cs">
+      <Link>ImageInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\ImageLoaderException.cs">
+      <Link>ImageLoaderException.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\MemoryImageLoader.cs">
+      <Link>MemoryImageLoader.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\Size.cs">
+      <Link>Size.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\WebImageLoader.cs">
+      <Link>WebImageLoader.cs</Link>
+    </Compile>
+    <Compile Include="Extensions\ByteArrayExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Reactive.Core, Version=2.0.20823.0, Culture=neutral, PublicKeyToken=f300afd708cefcd3, processorArchitecture=MSIL" />
+    <Reference Include="System.Reactive.Interfaces, Version=2.0.20823.0, Culture=neutral, PublicKeyToken=f300afd708cefcd3, processorArchitecture=MSIL" />
+    <Reference Include="System.Reactive.Linq, Version=2.0.20823.0, Culture=neutral, PublicKeyToken=f300afd708cefcd3, processorArchitecture=MSIL" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '11.0' ">
     <VisualStudioVersion>11.0</VisualStudioVersion>

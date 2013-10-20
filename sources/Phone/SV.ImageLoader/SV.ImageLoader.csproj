@@ -89,6 +89,9 @@
     <Compile Include="..\..\Desktop\SV.ImageLoader\CacheImageLoader.cs">
       <Link>CacheImageLoader.cs</Link>
     </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\Extensions\StreamExtension.cs">
+      <Link>Extensions\StreamExtension.cs</Link>
+    </Compile>
     <Compile Include="..\..\Desktop\SV.ImageLoader\ImageInfo.cs">
       <Link>ImageInfo.cs</Link>
     </Compile>
@@ -105,8 +108,8 @@
       <Link>WebImageLoader.cs</Link>
     </Compile>
     <Compile Include="Extensions\ByteArrayExtension.cs" />
-    <Compile Include="Extensions\StreamExtension.cs" />
     <Compile Include="Extensions\WebClientExtensions.cs" />
+    <Compile Include="Extensions\WebRequestExtensions.cs" />
     <Compile Include="IsolatedStorageImageLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

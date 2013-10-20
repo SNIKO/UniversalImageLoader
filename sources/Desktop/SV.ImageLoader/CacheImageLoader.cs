@@ -71,11 +71,10 @@ namespace SV.ImageLoader
 
                         if (cacheItem.ImageSize.Width > size.Width || cacheItem.ImageSize.Height > size.Height)
                         {
-                            Size imageSize;
-                            var resizedImageData = imageData.Resize(size, true, out imageSize);
+                            var resizedImageInfo = await imageData.ResizeAsync(size, true);
 
-                            resultImage.Data = resizedImageData;
-                            resultImage.Size = imageSize;
+                            resultImage.Data = resizedImageInfo.Data;
+                            resultImage.Size = resizedImageInfo.Size;
 
                             this.SaveToCache(resultImage);
                         }

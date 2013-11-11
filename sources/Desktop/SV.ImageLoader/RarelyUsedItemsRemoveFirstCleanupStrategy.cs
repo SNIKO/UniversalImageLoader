@@ -14,19 +14,19 @@ namespace SV.ImageLoader
         ///     Returns items that can be cleaned up using concrete strategy.
         /// </summary>
         /// <param name="items">
-        ///     Available items.
+        ///     All available items.
         /// </param>
-        /// <param name="itemWeightEvaluator">
-        ///     The evaluator to use for calculation a weight of the item in cache. The weight is characterized by a number of type <see cref="long"/>. The bigger this number, the heavier item in a cache, the less such items we
+        /// <param name="itemSizeEvaluator">
+        ///     The evaluator to use for calculation a size of the item in cache. The bigger this number, the heavier item in a cache, the less such items we
         ///     need to remove to free desired space.
         /// </param>
-        /// <param name="weightToFree">
-        ///     The total weight to free.
+        /// <param name="sizeToFree">
+        ///     The total size to free.
         /// </param>
         /// <returns>
         ///     The list of items that can be cleaned up.
         /// </returns>
-        protected override IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanupInternal(IEnumerable<CacheImageLoader.CacheItem> items, Func<CacheImageLoader.CacheItem, long> itemWeightEvaluator, long weightToFree)
+        protected override IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanupInternal(IEnumerable<CacheImageLoader.CacheItem> items, Func<CacheImageLoader.CacheItem, long> itemSizeEvaluator, long sizeToFree)
         {
             var itemsToDelete = new List<CacheImageLoader.CacheItem>();
             long weight = 0;
@@ -34,9 +34,9 @@ namespace SV.ImageLoader
             foreach (var cacheItem in items.OrderBy(i => i.LastAccessTime))
             {
                 itemsToDelete.Add(cacheItem);
-                weight += itemWeightEvaluator(cacheItem);
+                weight += itemSizeEvaluator(cacheItem);
 
-                if (weight > weightToFree)
+                if (weight >= sizeToFree)
                 {
                     break;
                 }

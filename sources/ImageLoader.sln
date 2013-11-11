@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SV.ImageLoader", "Phone\SV.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SV.ImageLoader", "Metro\SV.ImageLoader\SV.ImageLoader.csproj", "{5A757536-9576-46A9-8FAD-49BB9B26A6DA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SV.ImageLoader.Test", "Desktop\SV.ImageLoader.Test\SV.ImageLoader.Test.csproj", "{8FD4D473-F559-4ACD-A508-90FC4ED63A9B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,12 +67,23 @@ Global
 		{5A757536-9576-46A9-8FAD-49BB9B26A6DA}.Release|x64.Build.0 = Release|x64
 		{5A757536-9576-46A9-8FAD-49BB9B26A6DA}.Release|x86.ActiveCfg = Release|x86
 		{5A757536-9576-46A9-8FAD-49BB9B26A6DA}.Release|x86.Build.0 = Release|x86
+		{8FD4D473-F559-4ACD-A508-90FC4ED63A9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FD4D473-F559-4ACD-A508-90FC4ED63A9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FD4D473-F559-4ACD-A508-90FC4ED63A9B}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{8FD4D473-F559-4ACD-A508-90FC4ED63A9B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8FD4D473-F559-4ACD-A508-90FC4ED63A9B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8FD4D473-F559-4ACD-A508-90FC4ED63A9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FD4D473-F559-4ACD-A508-90FC4ED63A9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FD4D473-F559-4ACD-A508-90FC4ED63A9B}.Release|ARM.ActiveCfg = Release|Any CPU
+		{8FD4D473-F559-4ACD-A508-90FC4ED63A9B}.Release|x64.ActiveCfg = Release|Any CPU
+		{8FD4D473-F559-4ACD-A508-90FC4ED63A9B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{87D39166-5282-408B-B54B-14F8A6FE77B0} = {5C40DF9F-7AAD-46DD-92C6-9B55E8CF5C9C}
+		{8FD4D473-F559-4ACD-A508-90FC4ED63A9B} = {5C40DF9F-7AAD-46DD-92C6-9B55E8CF5C9C}
 		{47993B38-DC1B-44FF-B034-5F2341005B16} = {F92847CB-C95A-4581-88F2-02C7C5BD1F0F}
 		{5A757536-9576-46A9-8FAD-49BB9B26A6DA} = {CBD2E2F7-F112-4514-8451-681AB75947EC}
 	EndGlobalSection

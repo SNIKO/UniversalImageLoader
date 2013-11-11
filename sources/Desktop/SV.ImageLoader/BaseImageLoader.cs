@@ -40,8 +40,24 @@ namespace SV.ImageLoader
         ///     there cam be a smaller sample of the requested image in the local cache, so this image will be returned immediatly while the image of requested 
         ///     size is loading. Once the image of the desired size is loaded, it will be pushed into the same observable sequence.
         /// </remarks>
+        /// <exception cref="ArgumentNullException">
+        ///     <paramref name="uri"/> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        ///     <paramref name="size"/> has non positive width or height.
+        /// </exception>
         public IObservable<ImageInfo> WhenLoaded(Uri uri, Size size)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (size == default(Size) || size.Width <= 0 || size.Height <= 0)
+            {
+                throw new ArgumentException("The size should have positive width and height", "size");
+            }
+
             return this.WhenLoaded(uri, size, new Size(0, 0));
         }
 

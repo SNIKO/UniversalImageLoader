@@ -59,6 +59,17 @@ namespace SV.ImageLoader
             return base.GetHashCode();
         }
 
+        /// <summary>
+        ///     Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        ///     A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return string.Format("{0}x{1}", this.Width, this.Height);
+        }
+
         public static bool operator ==(Size size1, Size size2)
         {
             return size1.Equals(size2);

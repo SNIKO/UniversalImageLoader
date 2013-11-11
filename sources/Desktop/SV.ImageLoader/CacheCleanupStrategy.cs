@@ -24,49 +24,54 @@ namespace SV.ImageLoader
         ///     Returns items that can be cleaned up.
         /// </summary>
         /// <param name="items">
-        ///     Available items.
+        ///     All available items.
         /// </param>
-        /// <param name="itemWeightEvaluator">
-        ///     The evaluator to use for calculation a weight of the item in cache. The weight is characterized by a number of type <see cref="long"/>. The bigger this number, the heavier item in a cache, the less such items we
+        /// <param name="itemSizeEvaluator">
+        ///     The evaluator to use for calculation a size of the item in cache. The bigger this number, the heavier item in a cache, the less such items we
         ///     need to remove to free desired space.
         /// </param>
-        /// <param name="weightToFree">
-        ///     The total weight to free.
+        /// <param name="sizeToFree">
+        ///     The total size to free.
         /// </param>
         /// <returns>
         ///     The list of items that can be cleaned up.
         /// </returns>
-        public IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanup(IEnumerable<CacheImageLoader.CacheItem> items, Func<CacheImageLoader.CacheItem, long> itemWeightEvaluator, long weightToFree)
+        public IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanup(IEnumerable<CacheImageLoader.CacheItem> items, Func<CacheImageLoader.CacheItem, long> itemSizeEvaluator, long sizeToFree)
         {
             if (items == null)
             {
                 throw new ArgumentNullException("items");
             }
 
-            if (itemWeightEvaluator == null)
+            if (itemSizeEvaluator == null)
             {
-                throw new ArgumentNullException("itemWeightEvaluator");
+                throw new ArgumentNullException("itemSizeEvaluator");
             }
 
-            return this.GetItemsToCleanupInternal(items, itemWeightEvaluator, weightToFree);
+            if (sizeToFree <= 1)
+            {
+                throw new ArgumentOutOfRangeException("sizeToFree", "The size should be greater than 0");
+            }
+
+            return this.GetItemsToCleanupInternal(items, itemSizeEvaluator, sizeToFree);
         }
 
         /// <summary>
         ///     Returns items that can be cleaned up using concrete strategy.
         /// </summary>
         /// <param name="items">
-        ///     Available items.
+        ///     All available items.
         /// </param>
-        /// <param name="itemWeightEvaluator">
-        ///     The evaluator to use for calculation a weight of the item in cache. The weight is characterized by a number of type <see cref="long"/>. The bigger this number, the heavier item in a cache, the less such items we
+        /// <param name="itemSizeEvaluator">
+        ///     The evaluator to use for calculation a size of the item in cache. The bigger this number, the heavier item in a cache, the less such items we
         ///     need to remove to free desired space.
         /// </param>
-        /// <param name="weightToFree">
-        ///     The total weight to free.
+        /// <param name="sizeToFree">
+        ///     The total size to free.
         /// </param>
         /// <returns>
         ///     The list of items that can be cleaned up.
         /// </returns>
-        protected abstract IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanupInternal(IEnumerable<CacheImageLoader.CacheItem> items, Func<CacheImageLoader.CacheItem, long> itemWeightEvaluator, long weightToFree);
+        protected abstract IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanupInternal(IEnumerable<CacheImageLoader.CacheItem> items, Func<CacheImageLoader.CacheItem, long> itemSizeEvaluator, long sizeToFree);
     }
 }

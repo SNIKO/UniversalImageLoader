@@ -71,7 +71,7 @@ namespace SV.ImageLoader
                 throw new ArgumentNullException("itemSizeEvaluator");
             }
 
-            if (sizeToFree <= 1)
+            if (sizeToFree < 1)
             {
                 throw new ArgumentOutOfRangeException("sizeToFree", "The size should be greater than 0");
             }

@@ -21,10 +21,33 @@ namespace SV.ImageLoader
         }
 
         /// <summary>
+        ///     Gets a <see cref="SmallImagesRemoveFirstCleanupStrategy"/> instance.
+        /// </summary>
+        public static CacheCleanupStrategy SmallInstancesOfSameImageRemoveFirst
+        {
+            get
+            {
+                return new SmallImagesRemoveFirstCleanupStrategy();
+            }
+        }
+
+        /// <summary>
+        ///     Gets a <see cref="LargeImagesRemoveFirstCleanupStrategy"/> instance.
+        /// </summary>
+        public static CacheCleanupStrategy LargeInstancesOfSameImageRemoveFirst
+        {
+            get
+            {
+                return new LargeImagesRemoveFirstCleanupStrategy();
+            }
+        }
+
+        /// <summary>
         ///     Returns items that can be cleaned up.
         /// </summary>
         /// <param name="items">
-        ///     All available items.
+        ///     Available items for cleanup. Each dictionary item represents an image with specific key (uri). The value of the dictionary item is a list of concrete instances 
+        ///     of the image ordered by image size, from smallest to largest.
         /// </param>
         /// <param name="itemSizeEvaluator">
         ///     The evaluator to use for calculation a size of the item in cache. The bigger this number, the heavier item in a cache, the less such items we
@@ -36,7 +59,7 @@ namespace SV.ImageLoader
         /// <returns>
         ///     The list of items that can be cleaned up.
         /// </returns>
-        public IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanup(IEnumerable<CacheImageLoader.CacheItem> items, Func<CacheImageLoader.CacheItem, long> itemSizeEvaluator, long sizeToFree)
+        public IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanup(IReadOnlyDictionary<string, List<CacheImageLoader.CacheItem>> items, Func<CacheImageLoader.CacheItem, long> itemSizeEvaluator, long sizeToFree)
         {
             if (items == null)
             {
@@ -60,7 +83,8 @@ namespace SV.ImageLoader
         ///     Returns items that can be cleaned up using concrete strategy.
         /// </summary>
         /// <param name="items">
-        ///     All available items.
+        ///     Available items for cleanup. Each dictionary item represents an image with specific key (uri). The value of the dictionary item is a list of concrete instances 
+        ///     of the image ordered by image size, from smallest to largest.
         /// </param>
         /// <param name="itemSizeEvaluator">
         ///     The evaluator to use for calculation a size of the item in cache. The bigger this number, the heavier item in a cache, the less such items we
@@ -72,6 +96,6 @@ namespace SV.ImageLoader
         /// <returns>
         ///     The list of items that can be cleaned up.
         /// </returns>
-        protected abstract IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanupInternal(IEnumerable<CacheImageLoader.CacheItem> items, Func<CacheImageLoader.CacheItem, long> itemSizeEvaluator, long sizeToFree);
+        protected abstract IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanupInternal(IReadOnlyDictionary<string, List<CacheImageLoader.CacheItem>> items, Func<CacheImageLoader.CacheItem, long> itemSizeEvaluator, long sizeToFree);
     }
 }

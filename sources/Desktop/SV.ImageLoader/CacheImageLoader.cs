@@ -15,7 +15,7 @@ namespace SV.ImageLoader
     {
         #region Fields
 
-        private readonly List<CacheImageLoader.CacheItem> index = new List<CacheItem>();
+        private readonly Dictionary<string, List<CacheImageLoader.CacheItem>> index = new Dictionary<string, List<CacheImageLoader.CacheItem>>();
 
         private Func<CacheImageLoader.CacheItem, long> itemWeightEvaluator;
 
@@ -83,7 +83,7 @@ namespace SV.ImageLoader
 
                 if (weightRecalculationRequired)
                 {
-                    this.currentCacheWeight = this.index.Sum(this.itemWeightEvaluator);
+                    this.currentCacheWeight = this.index.Sum(images => images.Value.Sum(this.itemWeightEvaluator));
                 }
             }
 
@@ -228,14 +228,24 @@ namespace SV.ImageLoader
         {
             lock (this.index)
             {
-                var uniqueItems = cacheItems.Where(item => this.index.All(i => i.Key != item.Key || i.ImageSize != item.ImageSize)).ToList();
-
-                if (this.cacheSize != null)
+                foreach (var cacheItem in cacheItems)
                 {
-                    this.currentCacheWeight += uniqueItems.Sum(itemWeightEvaluator);
-                }
+                    List<CacheItem> sameKeyItems;
 
-                this.index.AddRange(uniqueItems);
+                    if (this.index.TryGetValue(cacheItem.Key, out sameKeyItems) == false)
+                    {
+                        this.index[cacheItem.Key] = sameKeyItems = new List<CacheItem>();
+                    }
+
+                    var position = 0;
+                    while (position < sameKeyItems.Count && sameKeyItems[position].ImageSize.Width < cacheItem.ImageSize.Width)
+                    {
+                        position++;
+                    }
+
+                    sameKeyItems.Insert(position, cacheItem);
+                    this.currentCacheWeight += itemWeightEvaluator(cacheItem);
+                }
             }
         }
 
@@ -308,47 +318,46 @@ namespace SV.ImageLoader
         private IEnumerable<CacheItem> GetCachedImagesByAppropriateness(Uri uri, Size desiredSize)
         {
             var result = new List<CacheItem>();
-            List<CacheItem> cachedImages;
 
             lock (this.index)
             {
                 var key = GenerateKey(uri);
-                cachedImages = this.index.Where(i => i.Key == key).ToList();
-            }
+                List<CacheItem> cachedImages;
 
-            if (cachedImages.Any())
-            {
-                var item = cachedImages.First();
-                var sizeComparer = item.ImageSize.Width > item.ImageSize.Height ? SizeComparer.ByWidth : SizeComparer.ByHeight;
-
-                var largerItems = new List<CacheItem>();
-                var smallerItems = new List<CacheItem>();
-                CacheItem equalItem = null;
-
-                foreach (var cacheItem in cachedImages)
+                if (this.index.TryGetValue(key, out cachedImages) && cachedImages.Any())
                 {
-                    var comparisonResult = sizeComparer.Compare(cacheItem.ImageSize, desiredSize);
-                    if (comparisonResult == 0)
+                    var item = cachedImages.First();
+                    var sizeComparer = item.ImageSize.Width > item.ImageSize.Height ? SizeComparer.ByWidth : SizeComparer.ByHeight;
+                    var largerItems = new List<CacheItem>();
+                    var smallerItems = new List<CacheItem>();
+                    CacheItem equalItem = null;
+
+                    foreach (var cacheItem in cachedImages)
                     {
-                        equalItem = cacheItem;
+                        var comparisonResult = sizeComparer.Compare(cacheItem.ImageSize, desiredSize);
+                        if (comparisonResult == 0)
+                        {
+                            equalItem = cacheItem;
+                        }
+                        else if (comparisonResult > 0)
+                        {
+                            largerItems.Add(cacheItem);
+                        }
+                        else
+                        {
+                            smallerItems.Add(cacheItem);
+                        }
                     }
-                    else if (comparisonResult > 0)
+
+                    if (equalItem != null)
                     {
-                        largerItems.Add(cacheItem);
+                        result.Add(equalItem);
                     }
-                    else
-                    {
-                        smallerItems.Add(cacheItem);
-                    }
+
+                    result.AddRange(largerItems.OrderBy(i => i.ImageSize, sizeComparer));
+                    result.AddRange(smallerItems.OrderByDescending(i => i.ImageSize, sizeComparer));
                 }
 
-                if (equalItem != null)
-                {
-                    result.Add(equalItem);
-                }
-
-                result.AddRange(largerItems.OrderBy(i => i.ImageSize, sizeComparer));
-                result.AddRange(smallerItems.OrderByDescending(i => i.ImageSize, sizeComparer));
             }
 
             return result;
@@ -358,7 +367,12 @@ namespace SV.ImageLoader
         {
             lock (this.index)
             {
-                this.index.Remove(item);
+                List<CacheImageLoader.CacheItem> sameKeyItems;
+
+                if (this.index.TryGetValue(item.Key, out sameKeyItems))
+                {
+                    sameKeyItems.Remove(item);
+                }
 
                 if (itemWeightEvaluator != null)
                 {

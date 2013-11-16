@@ -110,6 +110,9 @@
     <Compile Include="..\..\Desktop\SV.ImageLoader\ImageLoaderException.cs">
       <Link>ImageLoaderException.cs</Link>
     </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\LargeImagesRemoveFirstCleanupStrategy.cs">
+      <Link>LargeImagesRemoveFirstCleanupStrategy.cs</Link>
+    </Compile>
     <Compile Include="..\..\Desktop\SV.ImageLoader\MemoryImageLoader.cs">
       <Link>MemoryImageLoader.cs</Link>
     </Compile>
@@ -118,6 +121,9 @@
     </Compile>
     <Compile Include="..\..\Desktop\SV.ImageLoader\Size.cs">
       <Link>Size.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Desktop\SV.ImageLoader\SmallImagesRemoveFirstCleanupStrategy.cs">
+      <Link>SmallImagesRemoveFirstCleanupStrategy.cs</Link>
     </Compile>
     <Compile Include="..\..\Desktop\SV.ImageLoader\WebImageLoader.cs">
       <Link>WebImageLoader.cs</Link>

@@ -103,12 +103,12 @@ namespace SV.ImageLoader.Test
         {
             var cleanupStrategyMock = new Moq.Mock<ICacheCleanupStrategy>();
             cleanupStrategyMock
-                .Setup(f => f.GetItemsToCleanup(It.IsAny<IEnumerable<CacheImageLoader.CacheItem>>(), It.IsAny<Func<CacheImageLoader.CacheItem, long>>(), It.IsAny<long>()))
-                .Returns((IEnumerable<CacheImageLoader.CacheItem> items, Func<CacheImageLoader.CacheItem, long> sizeEvaluator, long siteToFree) =>
+                .Setup(f => f.GetItemsToCleanup(It.IsAny<IReadOnlyDictionary<string, List<CacheImageLoader.CacheItem>>>(), It.IsAny<Func<CacheImageLoader.CacheItem, long>>(), It.IsAny<long>()))
+                .Returns((IReadOnlyDictionary<string, List<CacheImageLoader.CacheItem>> items, Func<CacheImageLoader.CacheItem, long> sizeEvaluator, long sizeToFree) =>
                 {
-                    var sortedItems = items.OrderByDescending(c => c.ImageSize.Width);
+                    var sortedItems = items.SelectMany(s => s.Value).OrderByDescending(c => c.ImageSize.Width);
 
-                    return sortedItems.Take((int)siteToFree).ToList();
+                    return sortedItems.Take((int)sizeToFree).ToList();
                 });
 
             var fallbackLoaderMock = new ImageLoaderMock();

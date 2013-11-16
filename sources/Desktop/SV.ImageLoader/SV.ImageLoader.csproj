@@ -58,10 +58,12 @@
     <Compile Include="ICacheCleanupStrategy.cs" />
     <Compile Include="ImageLoaderException.cs" />
     <Compile Include="ImageInfo.cs" />
+    <Compile Include="LargeImagesRemoveFirstCleanupStrategy.cs" />
     <Compile Include="MemoryImageLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RarelyUsedItemsRemoveFirstCleanupStrategy.cs" />
     <Compile Include="Size.cs" />
+    <Compile Include="SmallImagesRemoveFirstCleanupStrategy.cs" />
     <Compile Include="WebImageLoader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

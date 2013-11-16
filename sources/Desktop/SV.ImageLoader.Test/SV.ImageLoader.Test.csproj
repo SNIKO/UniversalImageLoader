@@ -57,14 +57,17 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CacheCleanupStrategyTest.cs" />
     <Compile Include="BaseImageLoaderTest.cs" />
     <Compile Include="CacheImageLoaderTest.cs" />
     <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="Extensions\IntExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="LargeImagesRemoveFirstCleanupStrategyTest.cs" />
     <Compile Include="MemoryImageLoaderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RarelyUsedItemsRemoveFirstCleanupStrategyTest.cs" />
+    <Compile Include="SmallImagesRemoveFirstCleanupStrategyTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

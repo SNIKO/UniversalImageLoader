@@ -6,9 +6,9 @@ namespace SV.ImageLoader
     using System.Linq;
 
     /// <summary>
-    ///     Defines a cache cleanup strategy which removes items by oldest access time. So, the more rarely items will be removed first.
+    ///     Defines a cache cleanup strategy which removes small copies of the images first. These images can be generated from their larger copies.
     /// </summary>
-    public class RarelyUsedItemsRemoveFirstCleanupStrategy : CacheCleanupStrategy
+    public class SmallImagesRemoveFirstCleanupStrategy : CacheCleanupStrategy
     {
         /// <summary>
         ///     Returns items that can be cleaned up.
@@ -30,22 +30,31 @@ namespace SV.ImageLoader
         protected override IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanupInternal(IReadOnlyDictionary<string, List<CacheImageLoader.CacheItem>> items, Func<CacheImageLoader.CacheItem, long> itemSizeEvaluator, long sizeToFree)
         {
             var itemsToDelete = new List<CacheImageLoader.CacheItem>();
-            long weight = 0;
 
-            var allItems = new List<CacheImageLoader.CacheItem>();
-            foreach (var sameKeyItems in items.Values)
+            if (items.Any())
             {
-                allItems.AddRange(sameKeyItems);
-            }
+                var itemsGroupedByKeys = items.Values;
+                var releasedSize = (long)0;
 
-            foreach (var cacheItem in allItems.OrderBy(i => i.LastAccessTime))
-            {
-                itemsToDelete.Add(cacheItem);
-                weight += itemSizeEvaluator(cacheItem);
+                var maxGroupSize = itemsGroupedByKeys.Max(v => v.Count);
+                var currentSize = maxGroupSize;
 
-                if (weight >= sizeToFree)
+                while (currentSize > 0 && releasedSize < sizeToFree)
                 {
-                    break;
+                    foreach (var item in from groupedItems in itemsGroupedByKeys
+                                         where groupedItems.Count >= currentSize
+                                         select groupedItems[groupedItems.Count - currentSize])
+                    {
+                        itemsToDelete.Add(item);
+                        releasedSize += itemSizeEvaluator(item);
+
+                        if (releasedSize >= sizeToFree)
+                        {
+                            break;
+                        }
+                    }
+
+                    currentSize--;
                 }
             }
 

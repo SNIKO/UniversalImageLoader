@@ -3,89 +3,39 @@ namespace SV.ImageLoader.Test
 {
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SV.ImageLoader.Test.Extensions;
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
 
     [TestClass]
-    public class RarelyUsedItemsRemoveFirstCleanupStrategyTest
+    public class RarelyUsedItemsRemoveFirstCleanupStrategyTest : CacheCleanupStrategyTest
     {
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void GetItemsToCleanup_ItemsCollectionIsNull_ThrowException()
+        public void GetItemsToCleanup_SomeItemsAreSpecified_ReturnItemsAccordingToStrategy()
         {
             var strategy = new RarelyUsedItemsRemoveFirstCleanupStrategy();
+            var cacheItems = new Dictionary<string, List<CacheImageLoader.CacheItem>>();
 
-            strategy.GetItemsToCleanup(null, i => i.Size, 100);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void GetItemsToCleanup_SizeEvaluatorIsNull_ThrowException()
-        {
-            var strategy = new RarelyUsedItemsRemoveFirstCleanupStrategy();
-            var cacheItems = new[] { new CacheImageLoader.CacheItem() };
-
-            strategy.GetItemsToCleanup(cacheItems, null, 100);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void GetItemsToCleanup_SizeToFreeIsLessThanOne_ThrowException()
-        {
-            var strategy = new RarelyUsedItemsRemoveFirstCleanupStrategy();
-            var cacheItems = new[] { new CacheImageLoader.CacheItem() };
-
-            strategy.GetItemsToCleanup(cacheItems, i => i.Size, 0);
-        }
-
-        [TestMethod]
-        public void GetItemsToCleanup_ItemsCollectionIsEmpty_ReturnEmptyCollection()
-        {
-            var strategy = new RarelyUsedItemsRemoveFirstCleanupStrategy();
-            var cacheItems = new List<CacheImageLoader.CacheItem>();
-
-            var itemsToDelete = strategy.GetItemsToCleanup(cacheItems, i => i.Size, 100);
-            Assert.AreEqual(0, itemsToDelete.Count(), "Items to delete");
-        }
-
-        [TestMethod]
-        public void GetItemsToCleanup_SomeItemsAreSpecified_ReturnOldestItems()
-        {
-            var strategy = new RarelyUsedItemsRemoveFirstCleanupStrategy();
-            var cacheItems = new[]
+            cacheItems["McLaren"] = new List<CacheImageLoader.CacheItem>
                 {
-                    new CacheImageLoader.CacheItem
-                        {
-                            Size = 100,
-                            LastAccessTime = 5.DaysAgo()
-                        },
-                    new CacheImageLoader.CacheItem
-                        {
-                            Size = 50,
-                            LastAccessTime = 4.DaysAgo()
-                        },
-                    new CacheImageLoader.CacheItem
-                        {
-                            Size = 50,
-                            LastAccessTime = 3.DaysAgo()
-                        },
-                    new CacheImageLoader.CacheItem
-                        {
-                            Size = 10,
-                            LastAccessTime = 2.DaysAgo()
-                        },
-                    new CacheImageLoader.CacheItem
-                        {
-                            Size = 10,
-                            LastAccessTime = 2.DaysAgo()
-                        }
+                    new CacheImageLoader.CacheItem { Size = 100, LastAccessTime = 5.DaysAgo() },
+                    new CacheImageLoader.CacheItem { Size = 50, LastAccessTime = 3.DaysAgo() },
+                    new CacheImageLoader.CacheItem { Size = 10, LastAccessTime = 2.DaysAgo() },
                 };
 
-            var expectedItems = cacheItems.Take(3);
+            cacheItems["MU"] = new List<CacheImageLoader.CacheItem> {
+                    new CacheImageLoader.CacheItem { Size = 50, LastAccessTime = 4.DaysAgo() },
+                    new CacheImageLoader.CacheItem { Size = 10, LastAccessTime = 2.DaysAgo() },
+                    new CacheImageLoader.CacheItem { Size = 10, LastAccessTime = 2.DaysAgo() }
+                };
+
+            var expectedItems = new[] { cacheItems["McLaren"][0], cacheItems["McLaren"][1], cacheItems["MU"][0] };
             var itemsToDelete = strategy.GetItemsToCleanup(cacheItems, i => i.Size, 200);
 
             itemsToDelete.CheckContainsSameItemsAs(expectedItems);
+        }
+
+        protected override CacheCleanupStrategy GetCacheCleanupStrategyInstance()
+        {
+            return new RarelyUsedItemsRemoveFirstCleanupStrategy();
         }
     }
 }

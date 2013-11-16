@@ -25,6 +25,6 @@ namespace SV.ImageLoader
         /// <returns>
         ///     The list of items that can be cleaned up.
         /// </returns>
-        IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanup(IEnumerable<CacheImageLoader.CacheItem> items, Func<CacheImageLoader.CacheItem, long> itemSizeEvaluator, long sizeToFree);
+        IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanup(IReadOnlyDictionary<string, List<CacheImageLoader.CacheItem>> items, Func<CacheImageLoader.CacheItem, long> itemSizeEvaluator, long sizeToFree);
     }
 }

@@ -2,6 +2,8 @@
 
 A universal instrument for parallel images loading in background.
 
+![alt tag](https://raw.github.com/SNIKO/UniversalImageLoader/master/doc/screenshots_large.jpg)
+
 The next platforms are supported:
 * .NET 4.5
 * WinRT

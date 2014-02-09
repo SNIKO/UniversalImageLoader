@@ -21,10 +21,17 @@ namespace SV.ImageLoader
 
         #endregion
 
+        #region Constructors
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="BaseImageLoader"/> class.
+        /// </summary>
         protected BaseImageLoader()
         {
             DispatcherHelper.Initialize();
         }
+
+        #endregion
 
         #region Methods
 

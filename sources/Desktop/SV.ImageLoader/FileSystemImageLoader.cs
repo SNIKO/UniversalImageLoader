@@ -17,7 +17,7 @@ namespace SV.ImageLoader
     {
         #region Constants
 
-        private const string DefaultCacheDirectoryName = "McLarenChempion";
+        private const string DefaultCacheDirectoryName = "ImagesCache";
 
         #endregion
 
@@ -175,9 +175,11 @@ namespace SV.ImageLoader
         /// <param name="item">
         ///     The record that identifies the image in the cache.
         /// </param>
-        protected override void DeleteCacheData(CacheItem item)
+        protected override Task DeleteCacheDataAsync(CacheItem item)
         {
             TryDeleteFile(GetCacheFilePath(item));
+
+            return Task.FromResult(0);
         }
 
         /// <summary>
@@ -280,7 +282,7 @@ namespace SV.ImageLoader
                             {
                                 Key = parts[0],
                                 ImageSize = size,
-                                Size = fileInfo.Length
+                                Size = (ulong)fileInfo.Length
                             };
                     }
                 }

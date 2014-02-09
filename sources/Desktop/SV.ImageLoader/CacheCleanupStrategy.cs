@@ -59,7 +59,7 @@ namespace SV.ImageLoader
         /// <returns>
         ///     The list of items that can be cleaned up.
         /// </returns>
-        public IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanup(IReadOnlyDictionary<string, List<CacheImageLoader.CacheItem>> items, Func<CacheImageLoader.CacheItem, long> itemSizeEvaluator, long sizeToFree)
+        public IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanup(IReadOnlyDictionary<string, List<CacheImageLoader.CacheItem>> items, Func<CacheImageLoader.CacheItem, ulong> itemSizeEvaluator, ulong sizeToFree)
         {
             if (items == null)
             {
@@ -96,6 +96,6 @@ namespace SV.ImageLoader
         /// <returns>
         ///     The list of items that can be cleaned up.
         /// </returns>
-        protected abstract IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanupInternal(IReadOnlyDictionary<string, List<CacheImageLoader.CacheItem>> items, Func<CacheImageLoader.CacheItem, long> itemSizeEvaluator, long sizeToFree);
+        protected abstract IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanupInternal(IReadOnlyDictionary<string, List<CacheImageLoader.CacheItem>> items, Func<CacheImageLoader.CacheItem, ulong> itemSizeEvaluator, ulong sizeToFree);
     }
 }

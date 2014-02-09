@@ -17,11 +17,11 @@ namespace SV.ImageLoader
 
         private readonly Dictionary<string, List<CacheImageLoader.CacheItem>> index = new Dictionary<string, List<CacheImageLoader.CacheItem>>();
 
-        private Func<CacheImageLoader.CacheItem, long> itemWeightEvaluator;
+        private Func<CacheImageLoader.CacheItem, ulong> itemWeightEvaluator;
 
-        private CacheSize cacheSize;
+        private CacheSize cacheCapacity;
 
-        private long currentCacheWeight;
+        private ulong currentCacheWeight;
 
         private ICacheCleanupStrategy cacheCleanupStrategy;
 
@@ -63,8 +63,8 @@ namespace SV.ImageLoader
 
             lock (this.index)
             {
-                var weightRecalculationRequired = this.cacheSize != null && this.cacheSize.Units != size.Units;
-                this.cacheSize = size;
+                var weightRecalculationRequired = this.cacheCapacity != null && this.cacheCapacity.Units != size.Units;
+                this.cacheCapacity = size;
 
                 switch (size.Units)
                 {
@@ -289,7 +289,7 @@ namespace SV.ImageLoader
         /// <param name="item">
         ///     The record that identifies the image in the cache.
         /// </param>
-        protected abstract void DeleteCacheData(CacheItem item);
+        protected abstract Task DeleteCacheDataAsync(CacheItem item);
 
         /// <summary>
         ///     Retrieves the list of cached images with different size associated with <paramref name="uri"/>.
@@ -380,7 +380,7 @@ namespace SV.ImageLoader
                 }
             }
 
-            this.DeleteCacheData(item);
+            this.DeleteCacheDataAsync(item);
         }
 
         private void SaveToCache(ImageInfo image)
@@ -395,19 +395,21 @@ namespace SV.ImageLoader
             this.SetCacheDataAsync(cacheItem, image.Data);
         }
 
-        private void CleanupCache(long minFreeSpaceRequired)
+        private void CleanupCache(ulong minFreeSpaceRequired)
         {
             IEnumerable<CacheItem> itemsToDelete = null;
 
             lock (this.index)
             {
-                if (this.cacheSize != null)
+                if (this.cacheCapacity != null)
                 {
-                    var weightToFree = this.currentCacheWeight + minFreeSpaceRequired - this.cacheSize.Size;
+                    var newCacheSize = this.currentCacheWeight + minFreeSpaceRequired;
 
-                    if (this.cacheCleanupStrategy != null && weightToFree > 0)
+                    if (cacheCleanupStrategy != null && newCacheSize > (ulong)this.cacheCapacity.Size)
                     {
-                        itemsToDelete = this.cacheCleanupStrategy.GetItemsToCleanup(this.index, itemWeightEvaluator, weightToFree);                        
+                        var sizeToRelease = newCacheSize - (ulong)this.cacheCapacity.Size;
+
+                        itemsToDelete = this.cacheCleanupStrategy.GetItemsToCleanup(this.index, itemWeightEvaluator, sizeToRelease);
                     }
                 }
             }
@@ -440,7 +442,7 @@ namespace SV.ImageLoader
             /// <summary>
             ///     Gets or sets the size of the image in bytes.
             /// </summary>
-            public long Size { get; set; }
+            public ulong Size { get; set; }
 
             /// <summary>
             ///     Gets or sets the time when the last time the image was acceessed.

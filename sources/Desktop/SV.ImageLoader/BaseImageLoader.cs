@@ -21,6 +21,11 @@ namespace SV.ImageLoader
 
         #endregion
 
+        protected BaseImageLoader()
+        {
+            DispatcherHelper.Initialize();
+        }
+
         #region Methods
 
         /// <summary>

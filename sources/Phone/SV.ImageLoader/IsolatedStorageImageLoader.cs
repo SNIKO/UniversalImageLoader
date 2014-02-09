@@ -10,6 +10,7 @@ namespace SV.ImageLoader
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using Windows.Storage;
 
     /// <summary>
     ///     Loads the images from a specified folder.
@@ -18,7 +19,7 @@ namespace SV.ImageLoader
     {
         #region Constants
 
-        private const string DefaultCacheDirectoryName = "McLarenChempion";
+        private const string DefaultCacheDirectoryName = "ImagesCache";
 
         #endregion
 
@@ -26,9 +27,7 @@ namespace SV.ImageLoader
 
         private readonly object indexSyncObject = new object();
 
-        private readonly IsolatedStorageFile storage;
-
-        private string directory;
+        private StorageFolder cacheFolder;
 
         private CancellationTokenSource updateIndexToken;
 
@@ -41,8 +40,6 @@ namespace SV.ImageLoader
         /// </summary>
         public IsolatedStorageImageLoader()
         {
-            this.storage = IsolatedStorageFile.GetUserStoreForApplication();
-
             this.WithDirectory(DefaultCacheDirectoryName);
         }
 
@@ -71,10 +68,8 @@ namespace SV.ImageLoader
 
             lock (this.indexSyncObject)
             {
-                if (StringComparer.OrdinalIgnoreCase.Compare(this.directory, directory) != 0)
+                if (this.cacheFolder == null || this.cacheFolder.Path.EndsWith(directory, StringComparison.InvariantCultureIgnoreCase) == false)
                 {
-                    EnsureDireactoryExist(directory);
-
                     if (this.updateIndexToken != null)
                     {
                         this.updateIndexToken.Cancel();
@@ -82,9 +77,9 @@ namespace SV.ImageLoader
 
                     this.ClearIndex();
 
-                    this.directory = directory;
+                    this.cacheFolder = ApplicationData.Current.LocalFolder.CreateFolderAsync(directory, CreationCollisionOption.OpenIfExists).GetAwaiter().GetResult();
                     this.updateIndexToken = new CancellationTokenSource();
-                    this.UpdateIndexAsync(directory, this.updateIndexToken.Token);
+                    this.UpdateIndexAsync(this.updateIndexToken.Token);
                 }
             }
 
@@ -103,30 +98,38 @@ namespace SV.ImageLoader
         protected override async Task<byte[]> GetCacheDataAsync(CacheItem item)
         {
             byte[] imageData = null;
-            var filePath = GetCacheFilePath(item);
+            var fileName = GetCacheFileName(item);
+            var file = await this.cacheFolder.GetFileAsync(fileName);
 
-            try
+            if (file != null)
             {
-                using (var memoryStream = new MemoryStream())
+                try
                 {
-                    using (var fileStream = storage.OpenFile(filePath, FileMode.Open))
+                    using (var memoryStream = new MemoryStream())
                     {
-                        await fileStream.CopyToAsync(memoryStream);
-                    }
+                        using (var fileStream = await file.OpenReadAsync())
+                        {
+                            await fileStream.AsStreamForRead().CopyToAsync(memoryStream);
+                        }
 
-                    if (memoryStream.Length > 0)
-                    {
-                        imageData = memoryStream.ToArray();
-                    }
-                    else
-                    {
-                        TryDeleteFile(filePath);
+                        if (memoryStream.Length > 0)
+                        {
+                            imageData = memoryStream.ToArray();
+                        }
+                        else
+                        {
+                            TryDeleteFileAsync(file);
+                        }
                     }
                 }
+                catch (IsolatedStorageException)
+                {
+                    // Doesn't metter
+                }
             }
-            catch (IsolatedStorageException)
+            else
             {
-                // Doesn't metter
+                // TODO: Log it
             }
 
             return imageData;
@@ -145,9 +148,12 @@ namespace SV.ImageLoader
         {
             try
             {
-                using (var fileStream = this.storage.CreateFile(GetCacheFilePath(item)))
+                var fileName = GetCacheFileName(item);
+                var file = await this.cacheFolder.CreateFileAsync(fileName);
+
+                using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
                 {
-                    await fileStream.WriteAsync(data, 0, data.Length);
+                    await fileStream.AsStreamForWrite().WriteAsync(data, 0, data.Length);
                 }
             }
             catch (IsolatedStorageException)
@@ -162,9 +168,15 @@ namespace SV.ImageLoader
         /// <param name="item">
         ///     The record that identifies the image in the cache.
         /// </param>
-        protected override void DeleteCacheData(CacheItem item)
+        protected override async Task DeleteCacheDataAsync(CacheItem item)
         {
-            TryDeleteFile(GetCacheFilePath(item));
+            var fileName = GetCacheFileName(item);
+            var file = await this.cacheFolder.GetFileAsync(fileName);
+
+            if (file != null)
+            {
+                await this.TryDeleteFileAsync(file);
+            }
         }
 
         /// <summary>
@@ -209,14 +221,14 @@ namespace SV.ImageLoader
             return default(Size);
         }
 
-        private static CacheItem GetCacheItemFromFile(string filePath)
+        private static async Task<CacheItem> GetCacheItemFromFileAsync(StorageFile file)
         {
             CacheItem result = null;
 
             try
             {
-                var fileInfo = new FileInfo(filePath);
-                var fileName = fileInfo.Name;
+                var fileName = file.Name;
+                var basicProperties = await file.GetBasicPropertiesAsync();
                 var parts = fileName.Split('.');
 
                 if (parts.Length == 3)
@@ -229,7 +241,8 @@ namespace SV.ImageLoader
                             {
                                 Key = parts[0],
                                 ImageSize = size,
-                                Size = fileInfo.Length
+                                Size = basicProperties.Size,
+                                LastAccessTime = basicProperties.DateModified.UtcDateTime
                             };
                     }
                 }
@@ -246,11 +259,11 @@ namespace SV.ImageLoader
             return result;
         }
 
-        private bool TryDeleteFile(string pathToFile)
+        private async Task<bool> TryDeleteFileAsync(StorageFile file)
         {
             try
             {
-                this.storage.DeleteFile(pathToFile);
+                await file.DeleteAsync();
 
                 return true;
             }
@@ -260,67 +273,48 @@ namespace SV.ImageLoader
             }
         }
 
-        private string GetCacheFilePath(CacheItem cacheItem)
+        private static string GetCacheFileName(CacheItem cacheItem)
         {
             var fileName = string.Format("{0}.{1}x{2}.jpg", cacheItem.Key, cacheItem.ImageSize.Width, cacheItem.ImageSize.Height);
-            var filePath = Path.Combine(this.directory, fileName);
 
-            return filePath;
+            return fileName;
         }
 
-        private void EnsureDireactoryExist(string directory)
+        private async Task UpdateIndexAsync(CancellationToken token)
         {
-            try
+            var index = new List<CacheItem>();
+            var files = await this.cacheFolder.GetFilesAsync().AsTask();
+
+            foreach (var file in files)
             {
-                if (this.storage.DirectoryExists(directory) == false)
+                if (token.IsCancellationRequested)
                 {
-                    this.storage.CreateDirectory(directory);
+                    break;
+                }
+
+                var cacheItem = await GetCacheItemFromFileAsync(file);
+                if (cacheItem == null)
+                {
+                    continue;
+                }
+
+                if (cacheItem.Size == 0)
+                {
+                    TryDeleteFileAsync(file);
+                }
+                else
+                {
+                    index.Add(cacheItem);
                 }
             }
-            catch (IsolatedStorageException ex)
+
+            lock (this.indexSyncObject)
             {
-                throw new ImageLoaderException(string.Format("Can't use '{0}' as a cache directory", directory), ex);
+                if (token.IsCancellationRequested == false)
+                {
+                    this.AddToIndex(index);
+                }
             }
-        }
-
-        private Task UpdateIndexAsync(string cacheDirectory, CancellationToken token)
-        {
-            return Task.Run(() =>
-            {
-                var index = new List<CacheItem>();
-                var files = this.storage.GetFileNames(cacheDirectory);
-
-                foreach (var file in files)
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        break;
-                    }
-
-                    var cacheItem = GetCacheItemFromFile(file);
-                    if (cacheItem == null)
-                    {
-                        continue;
-                    }
-
-                    if (cacheItem.Size == 0)
-                    {
-                        TryDeleteFile(file);
-                    }
-                    else
-                    {
-                        index.Add(cacheItem);
-                    }
-                }
-
-                lock (this.indexSyncObject)
-                {
-                    if (token.IsCancellationRequested == false)
-                    {
-                        this.AddToIndex(index);
-                    }
-                }
-            });
         }
 
         #endregion

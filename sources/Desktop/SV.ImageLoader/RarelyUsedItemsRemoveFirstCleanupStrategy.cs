@@ -27,10 +27,10 @@ namespace SV.ImageLoader
         /// <returns>
         ///     The list of items that can be cleaned up.
         /// </returns>
-        protected override IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanupInternal(IReadOnlyDictionary<string, List<CacheImageLoader.CacheItem>> items, Func<CacheImageLoader.CacheItem, long> itemSizeEvaluator, long sizeToFree)
+        protected override IEnumerable<CacheImageLoader.CacheItem> GetItemsToCleanupInternal(IReadOnlyDictionary<string, List<CacheImageLoader.CacheItem>> items, Func<CacheImageLoader.CacheItem, ulong> itemSizeEvaluator, ulong sizeToFree)
         {
             var itemsToDelete = new List<CacheImageLoader.CacheItem>();
-            long weight = 0;
+            ulong weight = 0;
 
             var allItems = new List<CacheImageLoader.CacheItem>();
             foreach (var sameKeyItems in items.Values)

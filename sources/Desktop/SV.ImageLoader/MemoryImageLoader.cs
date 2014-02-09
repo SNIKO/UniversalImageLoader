@@ -59,12 +59,14 @@ namespace SV.ImageLoader
         /// <param name="item">
         ///     The record that identifies the image in the cache.
         /// </param>
-        protected override void DeleteCacheData(CacheItem item)
+        protected override Task DeleteCacheDataAsync(CacheItem item)
         {
             lock (this.cache)
             {
                 this.cache.Remove(item);
             }
+
+            return Task.FromResult(0);
         }
 
         #endregion

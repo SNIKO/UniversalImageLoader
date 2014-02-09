@@ -1,4 +1,6 @@
 ﻿
+using System.Windows;
+
 namespace SV.ImageLoader.Extensions
 {
     using System.IO;
@@ -27,32 +29,39 @@ namespace SV.ImageLoader.Extensions
         /// </returns>
         public static Task<ImageInfo> ResizeAsync(this byte[] imageData, Size newSize, bool keepAspectRatio)
         {
-            var result = new ImageInfo();
+            var tcs = new TaskCompletionSource<ImageInfo>();
 
-            var image = imageData.ToBitmap();
-            var percentWidth = (double)newSize.Width / (double)image.PixelWidth;
-            var percentHeight = (double)newSize.Height / (double)image.PixelHeight;
+            DispatcherHelper.InvokeAsync(() =>
+                {
+                    var result = new ImageInfo();
 
-            if (keepAspectRatio)
-            {
-                result.Size = percentWidth < percentHeight
-                                    ? new Size(newSize.Width, (int)(image.PixelHeight * percentWidth))
-                                    : new Size((int)(image.PixelWidth * percentHeight), newSize.Height);
-            }
-            else
-            {
-                result.Size = newSize;
-            }
+                    var image = imageData.ToBitmap();
+                    var percentWidth = (double)newSize.Width / (double)image.PixelWidth;
+                    var percentHeight = (double)newSize.Height / (double)image.PixelHeight;
 
-            var wb = new WriteableBitmap(image);
-            using (var memoryStream = new MemoryStream())
-            {
-                wb.SaveJpeg(memoryStream, result.Size.Width, result.Size.Height, 0, 100);
+                    if (keepAspectRatio)
+                    {
+                        result.Size = percentWidth < percentHeight
+                                            ? new Size(newSize.Width, (int)(image.PixelHeight * percentWidth))
+                                            : new Size((int)(image.PixelWidth * percentHeight), newSize.Height);
+                    }
+                    else
+                    {
+                        result.Size = newSize;
+                    }
 
-                result.Data = memoryStream.ToArray();
-            }
+                    var wb = new WriteableBitmap(image);
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        wb.SaveJpeg(memoryStream, result.Size.Width, result.Size.Height, 0, 100);
 
-            return Task.FromResult(result);
+                        result.Data = memoryStream.ToArray();
+                    }
+
+                    tcs.SetResult(result);
+                });
+
+            return tcs.Task;
         }
 
         /// <summary>

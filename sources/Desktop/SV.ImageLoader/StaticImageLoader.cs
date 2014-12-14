@@ -60,7 +60,7 @@ namespace SV.ImageLoader
                 {
                     if (imageData != null)
                     {
-                        var imageInfo = new ImageInfo(uri, new Size(0, 0), imageData, false);
+						var imageInfo = new ImageInfo(uri, size, imageData) { ForceFallback = true };
                         observer.OnNext(imageInfo);
                     }
 

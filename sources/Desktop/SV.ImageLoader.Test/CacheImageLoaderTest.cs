@@ -1,13 +1,13 @@
 ﻿
 namespace SV.ImageLoader.Test
 {
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
-    using SV.ImageLoader.Test.Extensions;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reactive.Linq;
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Reactive.Linq;
+	using Microsoft.VisualStudio.TestTools.UnitTesting;
+	using Moq;
+	using SV.ImageLoader.Test.Extensions;
 
     [TestClass]
     public abstract class CacheImageLoaderTest : BaseImageLoaderTest

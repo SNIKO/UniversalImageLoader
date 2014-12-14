@@ -9,12 +9,11 @@ namespace SV.ImageLoader
         {
         }
 
-        public ImageInfo(Uri uri, Size size, byte[] data, bool isFinal)
+        public ImageInfo(Uri uri, Size size, byte[] data)
         {
             this.Uri = uri;
             this.Size = size;
             this.Data = data;
-            this.IsFinal = isFinal;
         }
 
         public byte[] Data { get; internal set; }
@@ -23,7 +22,7 @@ namespace SV.ImageLoader
 
         public Uri Uri { get; internal set; }
 
-        internal bool IsFinal { get; set; }
+		internal bool ForceFallback { get; set; }
 
         /// <summary>
         ///     Returns a hash code for this instance.
@@ -92,6 +91,11 @@ namespace SV.ImageLoader
 
             return this;
         }
+
+		internal bool IsFittedIn(Size size)
+		{
+			return this.Size.Width >= size.Width || this.Size.Height >= size.Height;
+		}
 
         protected bool Equals(ImageInfo other)
         {

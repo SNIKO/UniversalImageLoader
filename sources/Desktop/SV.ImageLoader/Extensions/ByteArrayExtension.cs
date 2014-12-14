@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace SV.ImageLoader.Extensions
 {
     using System.IO;
@@ -26,28 +28,30 @@ namespace SV.ImageLoader.Extensions
         /// <returns>
         ///     The structure which contains binary data of resized image and the actial size of resized image depending on <paramref name="keepAspectRatio"/> value.
         /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///     An error occurred during resizing the image.
+        /// </exception>
         public static Task<ImageInfo> ResizeAsync(this byte[] imageData, Size newSize, bool keepAspectRatio)
         {
             var result = new ImageInfo();
-
             var image = imageData.ToBitmap();
-            var percentWidth = (double)newSize.Width / (double)image.PixelWidth;
-            var percentHeight = (double)newSize.Height / (double)image.PixelHeight;
-            
+            var percentWidth = (double) newSize.Width/(double) image.PixelWidth;
+            var percentHeight = (double) newSize.Height/(double) image.PixelHeight;
+
             ScaleTransform transform;
             if (keepAspectRatio)
             {
                 transform = percentWidth < percentHeight
-                                ? new ScaleTransform { ScaleX = percentWidth, ScaleY = percentWidth }
-                                : new ScaleTransform { ScaleX = percentHeight, ScaleY = percentHeight };
+                                ? new ScaleTransform {ScaleX = percentWidth, ScaleY = percentWidth}
+                                : new ScaleTransform {ScaleX = percentHeight, ScaleY = percentHeight};
             }
             else
             {
-                transform = new ScaleTransform { ScaleX = percentWidth, ScaleY = percentHeight };
+                transform = new ScaleTransform {ScaleX = percentWidth, ScaleY = percentHeight};
             }
 
             var resizedImage = new TransformedBitmap(image, transform);
-            
+
             using (var memoryStream = new MemoryStream())
             {
                 var jpegEncoder = new JpegBitmapEncoder();
@@ -70,6 +74,9 @@ namespace SV.ImageLoader.Extensions
         /// <returns>
         ///     The <see cref="BitmapImage"/> instance if the image presented by <paramref name="imageData"/>.
         /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///     An error occurred during converting the <paramref name="imageData"/> to <see cref="BitmapImage"/>.
+        /// </exception>
         public static BitmapImage ToBitmap(this byte[] imageData)
         {
             var bm = new BitmapImage();

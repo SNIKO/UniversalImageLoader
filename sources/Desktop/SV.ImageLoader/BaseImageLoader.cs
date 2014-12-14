@@ -1,9 +1,10 @@
 ﻿
 namespace SV.ImageLoader
 {
-    using System;
-    using System.Reactive.Disposables;
-    using System.Reactive.Linq;
+	using System;
+	using System.Diagnostics.Contracts;
+	using System.Reactive.Disposables;
+	using System.Reactive.Linq;
 
     /// <summary>
     ///     The base class for all image loaders.
@@ -120,7 +121,7 @@ namespace SV.ImageLoader
                         },
                         () =>
                         {
-                            if ((image == null || image.IsFinal == false) && fallbackLoader != null)
+							if ((image == null || image.IsFittedIn(size) == false || image.ForceFallback) && fallbackLoader != null)
                             {
                                 compositeDisposable.Add(this.fallbackLoader.WhenLoaded(uri, size, image == null ? minSize : image.Size)
                                     .Do(this.OnFallbackImageLoaded)

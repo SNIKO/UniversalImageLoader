@@ -70,7 +70,7 @@ namespace SV.ImageLoader.Test
                     {
                         Uri = new Uri(uri),
                         Size = desiredSize,
-                        Result = new ImageInfo(new Uri(uri), returnSize, imageData, true),
+                        Result = new ImageInfo(new Uri(uri), returnSize, imageData),
                         ExpectedTimes = times
                     });
             }

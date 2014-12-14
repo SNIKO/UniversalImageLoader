@@ -106,8 +106,7 @@ namespace SV.ImageLoader
                         {
                             Data = resizedImageInfo.Data,
                             Size = resizedImageInfo.Size,
-                            Uri = request.Uri,
-                            IsFinal = true
+                            Uri = request.Uri
                         };
 
                     request.Observer.OnNext(result);
@@ -116,6 +115,10 @@ namespace SV.ImageLoader
                 catch (WebException ex)
                 {
                     request.Observer.OnError(new ImageLoaderException(string.Format("An error occurred when loading the image on '{0}'", request.Uri), ex));
+                }
+                catch (Exception ex)
+                {
+                    request.Observer.OnError(new ImageLoaderException(string.Format("An error occurred when parsing loaded image on '{0}'", request.Uri), ex));
                 }
                 finally
                 {

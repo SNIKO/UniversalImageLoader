@@ -158,31 +158,36 @@ namespace SV.ImageLoader
                         }
                     }
 
-                    if (cacheItem != null && token.IsCancellationRequested == false)
+                    try
                     {
-                        var resultImage = new ImageInfo { Uri = uri };
-
-                        if (cacheItem.ImageSize.Width > size.Width || cacheItem.ImageSize.Height > size.Height)
+                        if (cacheItem != null && token.IsCancellationRequested == false)
                         {
-                            var resizedImageInfo = await imageData.ResizeAsync(size, true);
+                            var resultImage = new ImageInfo {Uri = uri};
 
-                            resultImage.Data = resizedImageInfo.Data;
-                            resultImage.Size = resizedImageInfo.Size;
+                            if (cacheItem.ImageSize.Width > size.Width || cacheItem.ImageSize.Height > size.Height)
+                            {
+                                var resizedImageInfo = await imageData.ResizeAsync(size, true);
 
-                            this.SaveToCache(resultImage);
+                                resultImage.Data = resizedImageInfo.Data;
+                                resultImage.Size = resizedImageInfo.Size;
+
+                                this.SaveToCache(resultImage);
+                            }
+                            else
+                            {
+                                resultImage.Data = imageData;
+                                resultImage.Size = cacheItem.ImageSize;
+                            }
+
+                            observer.OnNext(resultImage);
                         }
-                        else
-                        {
-                            resultImage.Data = imageData;
-                            resultImage.Size = cacheItem.ImageSize;
-                        }
 
-                        resultImage.IsFinal = resultImage.Size.Width == size.Width || resultImage.Size.Height == size.Height;
-
-                        observer.OnNext(resultImage);
+                        observer.OnCompleted();
                     }
-
-                    observer.OnCompleted();
+                    catch (InvalidOperationException ex)
+                    {
+                        observer.OnError(new ImageLoaderException(string.Format("An error occurred when parsing loaded image on '{0}'", uri), ex));
+                    }
 
                     return () => { };
                 });

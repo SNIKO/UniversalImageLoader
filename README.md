@@ -157,4 +157,4 @@ imageLoadSubscription.Dispose();
 
 ## Copyright
 
-Copyright (c) 2013 Sergii Vashchyshchuk
+Copyright (c) 2016 Sergii Vashchyshchuk
